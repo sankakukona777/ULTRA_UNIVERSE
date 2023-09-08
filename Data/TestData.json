@@ -1,0 +1,68 @@
+﻿{
+  "counter": 0,
+  "int": 123,
+  "float": 1.23,
+  "string": "string",
+  "string2": "bba",
+  "array": [ "array1", "array2", "array3" ],
+  "bool": true,
+  "Arrays": [
+    [ 1, 2, 3, 4, 5 ],
+    [ "joker", "mona", "skull", "panther", "fox" ],
+    [ 1.0, 2.0, 3.0, 4.0, 5.0 ],
+    [ true,true,true,false,true]
+  ],
+
+  "struct": {
+    "int": 456,
+    "float": 4.56,
+    "string": "KusoCode",
+    "array": [ "array1" , "array2" , "array3" ],
+    "bool": true,
+    "k": 0,
+    "o": {
+      "shiro": "(^^)<SINITAI!",
+      "kuro": "NARASHINE!>(^^)"
+    }
+  },
+
+  "exampleData": [
+    {
+      "pos": [ 1.0 , 1.0 , 1.0 ],
+      "pos2": "pos2",
+      "objPos": [
+        "HogeHoge",
+        [ 2.0, 2.0, 2.0 ],
+        [ 0.0, 120.0, 0.0 ],
+        [ 1.0, 5.0, 4.0 ]
+      ]
+    },
+    {
+      "pos": [ 1.0 , 3.5 , 1.0 ]
+    },
+    {
+      "pos": [ 2.0 , 1.0 , 1.0 ]
+    },
+    {
+      "pos": [ 3.0 , 1.0 , 3.0 ]
+    }
+  ],
+
+  "Sample": [
+    4.0,
+    1,
+    "freeFile",
+    {
+      "hoge": "fuga",
+      "think": {
+        "array": [
+          "konoFileZiyuSugiruDaro",
+          "HOGEHOGE",
+          "FUGAFUGA"
+        ],
+        "R&D": "AaN?YatteMiroyo!!!"
+      }
+    }
+  ]
+
+}
