@@ -8,33 +8,125 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 
-bool UJsonIO::SaveJsonData(const FString& savePath,FString CharName, TArray<AActor*> Items, TArray<int> Count)
+//AJsonDataObject* CreateJsonDataObject(const FString& jsonDataName, FJsonValue* jsonData, AActor* parent);
+//void SetJsonDataArrayObject(AJsonDataObject* jsonDataObject, const TArray<TSharedPtr<FJsonValue>>& jsonDatas);
+//void SetJsonDataObjectObject(AJsonDataObject* jsonDataObject,const TSharedPtr<FJsonObject>& jsonDatas);
+
+AJsonDataObject* UJsonIO::CreateJsonDataObjectFromFJsonObject(const FString& jsonDataName, const TSharedPtr<FJsonObject>& jsonData,AActor* parent)
 {
-    JsonObjectPtr JsonRootObject = MakeShareable(new FJsonObject);
+    FActorSpawnParameters spawnParam;
+    //spawnParam.Name = FName(jsonDataName);
+    spawnParam.Owner = parent;
+    AJsonDataObject* result = parent->GetWorld()->SpawnActor<AJsonDataObject>(AJsonDataObject::StaticClass(), spawnParam);
+    result->SetActorLabel(jsonDataName);
 
-    //保存した日時
-    const FString SaveDate = FDateTime::UtcNow().ToString();
-    JsonRootObject->SetStringField("SaveDate", SaveDate);
+    result->m_parent = parent;
 
-    //キャラ名
-    JsonRootObject->SetStringField("Character", CharName);
+    //FAttachmentTransformRules fatr = FAttachmentTransformRules(EAttachmentRule::SnapToTarget,false);
+    //result->AttachToActor(parent,fatr);
+    
+    SetJsonDataObjectObject(jsonDataName,result, jsonData);
+    return result;
+}
+AJsonDataObject* UJsonIO::CreateJsonDataObject(const FString& jsonDataName, FJsonValue* jsonData, AActor* parent)
+{
+    FActorSpawnParameters spawnParam;
+    //spawnParam.Name = FName(jsonDataName);
+    spawnParam.Owner = parent;
+    AJsonDataObject* result = parent->GetWorld()->SpawnActor<AJsonDataObject>(AJsonDataObject::StaticClass(), spawnParam);
+    result->SetActorLabel(jsonDataName);
 
-    //レベル上のオブジェクトの名前
-    TArray<TSharedPtr<FJsonValue>> ItemObjects;
+    result->m_parent = parent;
 
-    for (AActor* obj : Items)
+    //FAttachmentTransformRules fatr = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, false);
+    //result->AttachToActor(parent, fatr);
+
+    switch (jsonData->Type)
     {
-        ItemObjects.Add(MakeShareable(new FJsonValueString(obj->GetFullName())));
-    }
-    JsonRootObject->SetArrayField("Items", ItemObjects);
-
-    //数値の配列
-    TArray<TSharedPtr<FJsonValue>> ItemCountArray;
-    for (int i : Count)
+    case EJson::String:
+    case EJson::Number:
+    case EJson::Boolean:
     {
-        ItemCountArray.Add(MakeShareable(new FJsonValueNumber(i)));
+        result->m_type = EJsonDataType::Data;
+        result->m_data = jsonData->AsString();
     }
-    JsonRootObject->SetArrayField("ItemCount", ItemCountArray);
+    break;
+
+    case EJson::Array:
+    {
+        SetJsonDataArrayObject(jsonDataName,result, jsonData->AsArray());
+    }
+    break;
+
+    case EJson::Object:
+    {
+        SetJsonDataObjectObject(jsonDataName,result, jsonData->AsObject());
+    }
+    break;
+
+    default:
+        break;
+    }  
+
+    return result;
+}
+void UJsonIO::SetJsonDataArrayObject(const FString& jsonDataName,AJsonDataObject* jsonDataObject,const TArray<TSharedPtr<FJsonValue>>& jsonDatas)
+{
+    jsonDataObject->m_type = EJsonDataType::Array;
+
+    int count = 0;
+    for (auto data : jsonDatas)
+    {
+        FString name = jsonDataName + TEXT("::Array");
+        name += FString::FromInt(count);
+        count++;
+        jsonDataObject->m_array.Push(CreateJsonDataObject(name, data.Get(), jsonDataObject));
+    }
+
+}
+void UJsonIO::SetJsonDataObjectObject(const FString& jsonDataName,AJsonDataObject* jsonDataObject,const TSharedPtr<FJsonObject>& jsonDatas)
+{
+    jsonDataObject->m_type = EJsonDataType::Map;
+
+    for (auto datas : jsonDatas->Values)
+    {
+        jsonDataObject->m_map.Add(datas.Key, CreateJsonDataObject(jsonDataName + TEXT("::") + datas.Key, datas.Value.Get(), jsonDataObject));
+    }
+
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------
+//****************************************************************************************************************************************
+//----------------------------------------------------------------------------------------------------------------------------------------
+
+
+bool UJsonIO::SaveJsonData(const FString& savePath, AJsonDataObject* data)
+{
+    TSharedPtr<FJsonObject> JsonRootObject = MakeShareable(new FJsonObject);
+
+    ////保存した日時
+    //const FString SaveDate = FDateTime::UtcNow().ToString();
+    //JsonRootObject->SetStringField("SaveDate", SaveDate);
+
+    ////キャラ名
+    //JsonRootObject->SetStringField("Character", CharName);
+
+    ////レベル上のオブジェクトの名前
+    //TArray<TSharedPtr<FJsonValue>> ItemObjects;
+
+    //for (AActor* obj : Items)
+    //{
+    //    ItemObjects.Add(MakeShareable(new FJsonValueString(obj->GetFullName())));
+    //}
+    //JsonRootObject->SetArrayField("Items", ItemObjects);
+
+    ////数値の配列
+    //TArray<TSharedPtr<FJsonValue>> ItemCountArray;
+    //for (int i : Count)
+    //{
+    //    ItemCountArray.Add(MakeShareable(new FJsonValueNumber(i)));
+    //}
+    //JsonRootObject->SetArrayField("ItemCount", ItemCountArray);
 
     // FStringにJsonを書き込むためのWriterを作成
     FString OutPutString;
@@ -46,7 +138,7 @@ bool UJsonIO::SaveJsonData(const FString& savePath,FString CharName, TArray<AAct
     return FFileHelper::SaveStringToFile(OutPutString, *savePath);
 }
 
-bool UJsonIO::LoadJsonData(const FString& loadPath, FString& CharName, TArray<FString>& Items, TArray<int>& Count)
+bool UJsonIO::LoadJsonData(const FString& loadPath, const FString& loadJsonDataName,AActor* act, AJsonDataObject*& data)
 {
     FString RawData;
 
@@ -56,7 +148,7 @@ bool UJsonIO::LoadJsonData(const FString& loadPath, FString& CharName, TArray<FS
     if (bLoadedFile)
     {
         // FJsonObject(Jsonデータの入れ物)を作成
-        JsonObjectPtr JsonRootObject = MakeShareable(new FJsonObject());
+        TSharedPtr<FJsonObject> JsonRootObject = MakeShareable(new FJsonObject());
 
         // FStringからJsonを読み込むためのReaderを作成
         TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(RawData);
@@ -64,23 +156,9 @@ bool UJsonIO::LoadJsonData(const FString& loadPath, FString& CharName, TArray<FS
         // Json文字列からJsonオブジェクトに読み込み
         if (FJsonSerializer::Deserialize(JsonReader, JsonRootObject))
         {
-            //キャラネームの取得
-            CharName = JsonRootObject->GetStringField("Character");
-
-            //レベル上のオブジェクトの取得
-            for (TSharedPtr<FJsonValue> V : JsonRootObject->GetArrayField("Items"))
-            {
-                Items.Add(V->AsString());
-            }
-
-            //アイテムカウントの取得
-            for (TSharedPtr<FJsonValue> V : JsonRootObject->GetArrayField("ItemCount"))
-            {
-                Count.Add(V->AsNumber());
-            }
-            return true;
+            data = CreateJsonDataObjectFromFJsonObject(loadJsonDataName,JsonRootObject, act);
         }
-        return false;
+        return true;
     }
     return false;
 }
