@@ -55,9 +55,37 @@ public:
 	AJsonDataObject();
 
 public:
+	//データの消去
+	UFUNCTION(BlueprintCallable, Category = "JsonDataObject")
+		void Erase();
+
 	//複製を行う
 	UFUNCTION(BlueprintCallable, Category = "JsonDataObject")
 		AJsonDataObject* Clone(AJsonDataObject* parent = nullptr);
+
+	//----------------------------------------------------------------------------------------------------------------------------------------
+
+	//配列・マップから指定したJsonDataObjectを外す
+	UFUNCTION(BlueprintCallable, Category = "JsonDataObject")
+		bool HaveDataRemove(AJsonDataObject* child);
+
+	//配列・マップから指定したJsonDataObjectを削除する
+	UFUNCTION(BlueprintCallable, Category = "JsonDataObject")
+		bool HaveDataErase(AJsonDataObject* child);
+
+	//----------------------------------------------------------------------------------------------------------------------------------------
+
+	//マップのタグを変化する
+	UFUNCTION(BlueprintCallable, Category = "JsonDataObject")
+		bool ChangeMapTagDataObj(AJsonDataObject* child,const FString& afterTag);
+	UFUNCTION(BlueprintCallable, Category = "JsonDataObject")
+		bool ChangeMapTagDataTag(const FString& beforeTag, const FString& afterTag);
+
+	//指定したマップのタグのデータを消去する
+	UFUNCTION(BlueprintCallable, Category = "JsonDataObject")
+		bool EraseMapTagData(const FString& eraseDataTag);
+
+	//----------------------------------------------------------------------------------------------------------------------------------------
 
 private:
 	AJsonDataObject* CreateCloneObject(AJsonDataObject* parent = nullptr);

@@ -18,10 +18,21 @@ AJsonDataObject::AJsonDataObject()
 	// ...
 }
 
+void AJsonDataObject::Erase()
+{
+	AJsonDataObject* parent = dynamic_cast<AJsonDataObject*>(m_parent);
+	if (parent != nullptr)
+	{
+		parent->HaveDataRemove(this);
+	}
+	m_parent = nullptr;
+
+	this->Destroy();
+}
+
 AJsonDataObject* AJsonDataObject::Clone(AJsonDataObject* parent)
 {
 	AJsonDataObject* result = nullptr;
-
 
 	AJsonDataObject* dataParent = parent;
 
@@ -52,6 +63,108 @@ AJsonDataObject* AJsonDataObject::Clone(AJsonDataObject* parent)
 
 	return result;
 }
+
+//----------------------------------------------------------------------------------------------------------------------------------------
+
+bool AJsonDataObject::HaveDataRemove(AJsonDataObject* child)
+{
+	switch (m_type)
+	{
+	case EJsonDataType::Array:
+		if (m_array.Contains(child))
+		{
+			m_array.Remove(child);
+			child->m_parent = nullptr;
+			return true;
+		}
+		break;
+	case EJsonDataType::Map:
+		if (m_map.FindKey(child))
+		{
+			m_map.Remove(*m_map.FindKey(child));
+			child->m_parent = nullptr;
+			return true;
+		}
+		break;
+	}
+	return false;
+}
+
+bool AJsonDataObject::HaveDataErase(AJsonDataObject* child)
+{
+	switch (m_type)
+	{
+	case EJsonDataType::Array:
+		if (m_array.Contains(child))
+		{
+			child->Erase();
+			return true;
+		}
+		break;
+	case EJsonDataType::Map:
+		if (m_map.FindKey(child))
+		{
+			child->Erase();
+			return true;
+		}
+		break;
+	}
+	return false;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------
+
+bool AJsonDataObject::ChangeMapTagDataObj(AJsonDataObject* child, const FString& afterTag)
+{
+	if (m_type != EJsonDataType::Map)
+		return false;
+
+	if (m_map.FindKey(child) && !m_map.Contains(afterTag))
+	{
+		m_map.Remove(*m_map.FindKey(child));
+		m_map.Add(afterTag, child);
+		return true;
+	}
+
+	return false;
+}
+bool AJsonDataObject::ChangeMapTagDataTag(const FString& beforeTag, const FString& afterTag)
+{
+	if (m_type != EJsonDataType::Map)
+		return false;
+
+	if (m_map.Contains(beforeTag) && !m_map.Contains(afterTag))
+	{
+		AJsonDataObject* child = *m_map.Find(beforeTag);
+		m_map.Remove(beforeTag);
+		m_map.Add(afterTag, child);
+		return true;
+	}
+
+	return false;
+
+}
+
+bool AJsonDataObject::EraseMapTagData(const FString& eraseDataTag)
+{
+	if (m_type != EJsonDataType::Map)
+		return false;
+
+	if (m_map.Contains(eraseDataTag))
+	{
+		AJsonDataObject* erase = *m_map.Find(eraseDataTag);
+		erase->Erase();
+		return true;
+	}
+
+	return false;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------
+//****************************************************************************************************************************************
+//----------------------------------------------------------------------------------------------------------------------------------------
+
+
 
 AJsonDataObject* AJsonDataObject::CreateCloneObject(AJsonDataObject* parent)
 {

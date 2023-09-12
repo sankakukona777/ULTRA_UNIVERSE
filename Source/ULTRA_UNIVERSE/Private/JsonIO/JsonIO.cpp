@@ -15,7 +15,7 @@ AJsonDataObject* UJsonIO::CreateJsonDataObjectFromFJsonObject(const FString& jso
 {
     FActorSpawnParameters spawnParam;
     //spawnParam.Name = FName(jsonDataName);
-    spawnParam.Owner = parent;
+    //spawnParam.Owner = parent;
     AJsonDataObject* result = parent->GetWorld()->SpawnActor<AJsonDataObject>(AJsonDataObject::StaticClass(), spawnParam);
     result->SetActorLabel(jsonDataName);
 
@@ -31,7 +31,7 @@ AJsonDataObject* UJsonIO::CreateJsonDataObject(const FString& jsonDataName, FJso
 {
     FActorSpawnParameters spawnParam;
     //spawnParam.Name = FName(jsonDataName);
-    spawnParam.Owner = parent;
+    //spawnParam.Owner = parent;
     AJsonDataObject* result = parent->GetWorld()->SpawnActor<AJsonDataObject>(AJsonDataObject::StaticClass(), spawnParam);
     result->SetActorLabel(jsonDataName);
 
