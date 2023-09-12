@@ -34,10 +34,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataType")
 		EJsonDataType m_type;
 
-	//親
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parent")
-		AActor* m_parent;
-
 	//データ
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
 		FString m_data;
@@ -50,10 +46,20 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "DataMap")
 		TMap<FString, AJsonDataObject*> m_map;
 
-
+	//親
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataParent")
+		AActor* m_parent;
 
 public:	
 	// Sets default values for this component's properties
 	AJsonDataObject();
+
+public:
+	//複製を行う
+	UFUNCTION(BlueprintCallable, Category = "JsonDataObject")
+		AJsonDataObject* Clone(AJsonDataObject* parent = nullptr);
+
+private:
+	AJsonDataObject* CreateCloneObject(AJsonDataObject* parent = nullptr);
 
 };
