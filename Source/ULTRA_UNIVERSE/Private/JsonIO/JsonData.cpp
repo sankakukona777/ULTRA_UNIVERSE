@@ -23,7 +23,7 @@ void AJsonDataObject::Erase()
 	AJsonDataObject* parent = dynamic_cast<AJsonDataObject*>(m_parent);
 	if (parent != nullptr)
 	{
-		parent->HaveDataRemove(this);
+		parent->RemoveHaveData(this);
 	}
 	m_parent = nullptr;
 
@@ -66,7 +66,7 @@ AJsonDataObject* AJsonDataObject::Clone(AJsonDataObject* parent)
 
 //----------------------------------------------------------------------------------------------------------------------------------------
 
-bool AJsonDataObject::HaveDataRemove(AJsonDataObject* child)
+bool AJsonDataObject::RemoveHaveData(AJsonDataObject* child)
 {
 	switch (m_type)
 	{
@@ -90,7 +90,7 @@ bool AJsonDataObject::HaveDataRemove(AJsonDataObject* child)
 	return false;
 }
 
-bool AJsonDataObject::HaveDataErase(AJsonDataObject* child)
+bool AJsonDataObject::EraseHaveData(AJsonDataObject* child)
 {
 	switch (m_type)
 	{
@@ -112,14 +112,83 @@ bool AJsonDataObject::HaveDataErase(AJsonDataObject* child)
 	return false;
 }
 
+bool AJsonDataObject::MoveHaveData(AJsonDataObject* child, AJsonDataObject* destJsonDataObj, const FString& moveDataAfterTag)
+{
+	switch (m_type)
+	{
+	case EJsonDataType::Array:
+	{
+		switch (destJsonDataObj->m_type)
+		{
+		case EJsonDataType::Array:
+			return MoveDataArrayToArray(child, destJsonDataObj);
+		case EJsonDataType::Map:
+			return MoveDataArrayToMap(child, destJsonDataObj,moveDataAfterTag);
+		}
+	}
+	break;
+	case EJsonDataType::Map:
+	{
+		switch (destJsonDataObj->m_type)
+		{
+		case EJsonDataType::Array:
+			return MoveDataMapToArray(child, destJsonDataObj);
+		case EJsonDataType::Map:
+			return MoveDataMapToMap(child, destJsonDataObj, moveDataAfterTag);
+		}
+	}
+	break;
+	}
+
+	return false;
+}
+
+
+//----------------------------------------------------------------------------------------------------------------------------------------
+
+bool AJsonDataObject::MoveDataArrayToArray(AJsonDataObject* moveData, AJsonDataObject* destJsonDataObj)
+{
+	if (m_type != EJsonDataType::Array || destJsonDataObj->m_type != EJsonDataType::Array)
+		return false;
+
+	m_array.Remove(moveData);
+	destJsonDataObj->m_array.Add(moveData);
+
+	moveData->m_parent = destJsonDataObj;
+
+	return true;
+}
+
+bool AJsonDataObject::MoveDataArrayToMap(AJsonDataObject* moveData, AJsonDataObject* destJsonDataObj, const FString& moveDataAfterTag)
+{
+	if (moveDataAfterTag.IsEmpty())
+		return false;
+
+	if (m_type != EJsonDataType::Array || destJsonDataObj->m_type != EJsonDataType::Map)
+		return false;
+
+	if (destJsonDataObj->m_map.Contains(moveDataAfterTag))
+		return false;
+
+	m_array.Remove(moveData);
+	destJsonDataObj->m_map.Add(moveDataAfterTag, moveData);
+
+	moveData->m_parent = destJsonDataObj;
+
+	return true;
+}
+
 //----------------------------------------------------------------------------------------------------------------------------------------
 
 bool AJsonDataObject::ChangeMapTagDataObj(AJsonDataObject* child, const FString& afterTag)
 {
+	if (afterTag.IsEmpty())
+		return false;
+
 	if (m_type != EJsonDataType::Map)
 		return false;
 
-	if (m_map.FindKey(child) && !m_map.Contains(afterTag))
+	if (!m_map.FindKey(child)->IsEmpty() && !m_map.Contains(afterTag))
 	{
 		m_map.Remove(*m_map.FindKey(child));
 		m_map.Add(afterTag, child);
@@ -130,6 +199,9 @@ bool AJsonDataObject::ChangeMapTagDataObj(AJsonDataObject* child, const FString&
 }
 bool AJsonDataObject::ChangeMapTagDataTag(const FString& beforeTag, const FString& afterTag)
 {
+	if (beforeTag.IsEmpty() || afterTag.IsEmpty())
+		return false;
+
 	if (m_type != EJsonDataType::Map)
 		return false;
 
@@ -158,6 +230,74 @@ bool AJsonDataObject::EraseMapTagData(const FString& eraseDataTag)
 	}
 
 	return false;
+}
+
+bool AJsonDataObject::MoveTagDataMapToMap(const FString& moveDataTag, AJsonDataObject* destJsonDataObj, const FString& moveDataAfterTag)
+{
+	if (m_type != EJsonDataType::Map || destJsonDataObj->m_type != EJsonDataType::Map)
+		return false;
+
+	if (!m_map.Contains(moveDataTag) || destJsonDataObj->m_map.Contains(moveDataAfterTag))
+		return false;
+
+	AJsonDataObject* moveObj = *m_map.Find(moveDataTag);
+	m_map.Remove(moveDataTag);
+	destJsonDataObj->m_map.Add(moveDataAfterTag, moveObj);
+
+	moveObj->m_parent = destJsonDataObj;
+
+	return true;
+}
+bool AJsonDataObject::MoveTagDataMapToArray(const FString& moveDataTag, AJsonDataObject* destJsonDataObj)
+{
+	if (m_type != EJsonDataType::Map || destJsonDataObj->m_type != EJsonDataType::Array)
+		return false;
+
+	if (!m_map.Contains(moveDataTag))
+		return false;
+
+	AJsonDataObject* moveObj = *m_map.Find(moveDataTag);
+	m_map.Remove(moveDataTag);
+	destJsonDataObj->m_array.Add(moveObj);
+
+	moveObj->m_parent = destJsonDataObj;
+
+	return true;
+}
+
+
+bool AJsonDataObject::MoveDataMapToMap(AJsonDataObject* moveData, AJsonDataObject* destJsonDataObj, const FString& moveDataAfterTag)
+{
+	if (moveDataAfterTag.IsEmpty())
+		return false;
+
+	if (m_type != EJsonDataType::Map || destJsonDataObj->m_type != EJsonDataType::Map)
+		return false;
+
+	if (m_map.FindKey(moveData)->IsEmpty() || destJsonDataObj->m_map.Contains(moveDataAfterTag))
+		return false;
+
+	m_map.Remove(*m_map.FindKey(moveData));
+	destJsonDataObj->m_map.Add(moveDataAfterTag, moveData);
+
+	moveData->m_parent = destJsonDataObj;
+
+	return true;
+}
+bool AJsonDataObject::MoveDataMapToArray(AJsonDataObject* moveData, AJsonDataObject* destJsonDataObj)
+{
+	if (m_type != EJsonDataType::Map || destJsonDataObj->m_type != EJsonDataType::Array)
+		return false;
+
+	if (m_map.FindKey(moveData)->IsEmpty())
+		return false;
+
+	m_map.Remove(*m_map.FindKey(moveData));
+	destJsonDataObj->m_array.Add(moveData);
+
+	moveData->m_parent = destJsonDataObj;
+
+	return true;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------

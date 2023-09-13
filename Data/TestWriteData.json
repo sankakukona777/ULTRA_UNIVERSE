@@ -56,6 +56,19 @@
 		{
 			"shiro": "(^^)<SINITAI!",
 			"kuro": "NARASHINE!>(^^)"
+		},
+		"MoveMap":
+		{
+			"hoge": "fuga",
+			"think":
+			{
+				"array": [
+					"konoFileZiyuSugiruDaro",
+					"HOGEHOGE",
+					"FUGAFUGA"
+				],
+				"R&D": "AaN?YatteMiroyo!!!"
+			}
 		}
 	},
 	"exampleData": [
@@ -110,35 +123,6 @@
 	"Sample": [
 		"4",
 		"1",
-		"freeFile",
-		{
-			"hoge": "fuga",
-			"think":
-			{
-				"array": [
-					"konoFileZiyuSugiruDaro",
-					"HOGEHOGE",
-					"FUGAFUGA"
-				],
-				"R&D": "AaN?YatteMiroyo!!!"
-			}
-		}
-	],
-	"NewNameSample": [
-		"4",
-		"1",
-		"freeFile",
-		{
-			"hoge*": "fuga",
-			"think*":
-			{
-				"array*": [
-					"konoFileZiyuSugiruDaro",
-					"HOGEHOGE",
-					"FUGAFUGA"
-				],
-				"R&D*": "AaN?YatteMiroyo!!!"
-			}
-		}
+		"freeFile"
 	]
 }

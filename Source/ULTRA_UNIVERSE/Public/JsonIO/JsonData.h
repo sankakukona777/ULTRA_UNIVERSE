@@ -31,23 +31,23 @@ class ULTRA_UNIVERSE_API AJsonDataObject : public AActor
 
 public:
 	//何のデータが格納されているか確認するための変数
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataType")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DataType")
 		EJsonDataType m_type;
 
 	//データ
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data")
 		FString m_data;
 
 	//配列
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataArray")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DataArray")
 		TArray<AJsonDataObject*> m_array;
 
 	//マップ(タグとデータがセットで登録されている配列)
-	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "DataMap")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DataMap")
 		TMap<FString, AJsonDataObject*> m_map;
 
 	//親
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataParent")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DataParent")
 		AActor* m_parent;
 
 public:	
@@ -67,23 +67,47 @@ public:
 
 	//配列・マップから指定したJsonDataObjectを外す
 	UFUNCTION(BlueprintCallable, Category = "JsonDataObject")
-		bool HaveDataRemove(AJsonDataObject* child);
+		bool RemoveHaveData(AJsonDataObject* child);
 
 	//配列・マップから指定したJsonDataObjectを削除する
 	UFUNCTION(BlueprintCallable, Category = "JsonDataObject")
-		bool HaveDataErase(AJsonDataObject* child);
+		bool EraseHaveData(AJsonDataObject* child);
+
+	//配列・マップから指定したJsonDataObjectを移動先のJsonDataObjectに移動する
+	UFUNCTION(BlueprintCallable, Category = "JsonDataObject")
+		bool MoveHaveData(AJsonDataObject* child, AJsonDataObject* destJsonDataObj,const FString& moveDataAfterTag = "");
+
+	//----------------------------------------------------------------------------------------------------------------------------------------
+
+	//指定した配列のデータを移動先の配列に移動させる
+	UFUNCTION(BlueprintCallable, Category = "JsonDataObject:Array")
+		bool MoveDataArrayToArray(AJsonDataObject* moveData, AJsonDataObject* destJsonDataObj);
+	UFUNCTION(BlueprintCallable, Category = "JsonDataObject:Array")
+		bool MoveDataArrayToMap(AJsonDataObject* moveData, AJsonDataObject* destJsonDataObj, const FString& moveDataAfterTag);
 
 	//----------------------------------------------------------------------------------------------------------------------------------------
 
 	//マップのタグを変化する
-	UFUNCTION(BlueprintCallable, Category = "JsonDataObject")
+	UFUNCTION(BlueprintCallable, Category = "JsonDataObject:Map")
 		bool ChangeMapTagDataObj(AJsonDataObject* child,const FString& afterTag);
-	UFUNCTION(BlueprintCallable, Category = "JsonDataObject")
+	UFUNCTION(BlueprintCallable, Category = "JsonDataObject:Map")
 		bool ChangeMapTagDataTag(const FString& beforeTag, const FString& afterTag);
 
 	//指定したマップのタグのデータを消去する
-	UFUNCTION(BlueprintCallable, Category = "JsonDataObject")
+	UFUNCTION(BlueprintCallable, Category = "JsonDataObject:Map")
 		bool EraseMapTagData(const FString& eraseDataTag);
+
+	//指定したマップのタグのデータを移動先の配列に移動させる
+	UFUNCTION(BlueprintCallable, Category = "JsonDataObject:Map")
+		bool MoveTagDataMapToMap(const FString& moveDataTag, AJsonDataObject* destJsonDataObj, const FString& moveDataAfterTag);
+	UFUNCTION(BlueprintCallable, Category = "JsonDataObject:Map")
+		bool MoveTagDataMapToArray(const FString& moveDataTag, AJsonDataObject* destJsonDataObj);
+
+	//指定したマップのデータを移動先の配列に移動させる
+	UFUNCTION(BlueprintCallable, Category = "JsonDataObject:Map")
+		bool MoveDataMapToMap(AJsonDataObject* moveData, AJsonDataObject* destJsonDataObj, const FString& moveDataAfterTag);
+	UFUNCTION(BlueprintCallable, Category = "JsonDataObject:Map")
+		bool MoveDataMapToArray(AJsonDataObject* moveData, AJsonDataObject* destJsonDataObj);
 
 	//----------------------------------------------------------------------------------------------------------------------------------------
 

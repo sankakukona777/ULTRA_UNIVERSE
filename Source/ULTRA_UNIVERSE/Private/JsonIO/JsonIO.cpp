@@ -202,3 +202,69 @@ bool UJsonIO::LoadJsonData(const FString& loadPath, const FString& loadJsonDataN
     }
     return false;
 }
+
+AJsonDataObject* UJsonIO::CreateJsonDataObject(EJsonDataType createObjType, const FString& createDataObjTag, AActor* act, const FString& data, AActor* parent)
+{
+    if (createObjType == EJsonDataType::Null)
+        return nullptr;
+
+    AJsonDataObject* castParent = dynamic_cast<AJsonDataObject*>(parent);
+    if (castParent != nullptr)
+    {
+        if (castParent->m_type == EJsonDataType::Data || castParent->m_type == EJsonDataType::Null)
+            return nullptr;
+
+        if (castParent->m_type == EJsonDataType::Map)
+            if (castParent->m_map.Find(createDataObjTag) != nullptr)
+                return nullptr;
+    }
+
+    FActorSpawnParameters spawnParam;
+    //spawnParam.Name = FName(jsonDataName);
+    //spawnParam.Owner = parent;
+    AJsonDataObject* result = parent->GetWorld()->SpawnActor<AJsonDataObject>(AJsonDataObject::StaticClass(), spawnParam);
+    
+    result->SetActorLabel(createDataObjTag);
+
+
+    if (parent != nullptr)
+    {
+        result->m_parent = parent;
+
+        if (castParent != nullptr)
+        {
+            switch (castParent->m_type)
+            {
+            case EJsonDataType::Array:
+                castParent->m_array.Add(result);
+                break;
+            case EJsonDataType::Map:
+                castParent->m_map.Add(createDataObjTag,result);
+                break;
+            }
+        }
+    }
+    else
+        result->m_parent = act;
+    
+    result->m_type = createObjType;
+
+    //FAttachmentTransformRules fatr = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, false);
+    //result->AttachToActor(parent, fatr);
+
+    switch (createObjType)
+    {
+    case EJsonDataType::Data:
+    {
+        if(!data.IsEmpty())
+            result->m_data = data;
+    }
+    break;
+
+    case EJsonDataType::Array:
+    case EJsonDataType::Map:
+    break;
+    }
+
+    return result;
+}

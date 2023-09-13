@@ -24,6 +24,9 @@ class ULTRA_UNIVERSE_API UJsonIO : public UBlueprintFunctionLibrary
     UFUNCTION(BlueprintCallable, Category = "JsonIO")
         static bool LoadJsonData(const FString& loadPath,const FString& loadJsonDataName,AActor* act,AJsonDataObject*& data);
 
+    UFUNCTION(BlueprintCallable, Category = "JsonIO")
+        static AJsonDataObject* CreateJsonDataObject(EJsonDataType createObjType,const FString& createDataObjTag,AActor* act, const FString& data = "", AActor* parent = nullptr);
+
     //----------------------------------------------------------------------------------------------------------------------------------------
     //****************************************************************************************************************************************
     //----------------------------------------------------------------------------------------------------------------------------------------
