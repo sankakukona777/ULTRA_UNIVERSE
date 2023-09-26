@@ -35,7 +35,7 @@ public:
 		EJsonDataType m_type;
 
 	//データ
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
 		FString m_data;
 
 	//配列
