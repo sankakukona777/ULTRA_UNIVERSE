@@ -8,15 +8,7 @@ public class ULTRA_UNIVERSE : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] 
-		{ 
-			"Core",
-			"CoreUObject",
-			"Engine",
-			"InputCore",
-			"Json",//’Ç‰Á
-			"JsonUtilities",//’Ç‰Á
-		});
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "Json", "JsonUtilities", });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
