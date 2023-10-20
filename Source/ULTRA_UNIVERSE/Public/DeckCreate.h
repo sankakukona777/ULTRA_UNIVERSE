@@ -5,21 +5,21 @@
 #include "CoreMinimal.h"
 
 /**
- * 
+ * デッキを作る関数
  */
 class ULTRA_UNIVERSE_API DeckCreate
 {
-private:
-	//デッキの枚数
-
 public:
 	DeckCreate();
 	~DeckCreate();
 
-	void CreatePassiveDeck();
+	UFUNCTION(BlueprintCallable, Category = "MyBPLibrary")
+	 void CreatePassiveDeck(FString cardId);
 
-	void CreateActiveDeck();
+	UFUNCTION(BlueprintCallable, Category="MyBPLibrary")
+	
+	 void CreateActiveDeck(FString cardId);
 private:
-	TArray<int> passiveDeck;
-	TArray<int> activeDeck;
+	TArray<FString> m_passiveDeck;
+	TArray<FString> m_activeDeck;
 };
