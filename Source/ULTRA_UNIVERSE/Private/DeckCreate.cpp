@@ -10,3 +10,13 @@ DeckCreate::DeckCreate()
 DeckCreate::~DeckCreate()
 {
 }
+
+void DeckCreate::CreatePassiveDeck(FString cardId)
+{
+	m_passiveDeck.Add(cardId);
+}
+
+void DeckCreate::CreateActiveDeck(FString cardId)
+{
+	m_activeDeck.Add(cardId);
+}
